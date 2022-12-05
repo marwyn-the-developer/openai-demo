@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div>
+    <form id="file-form" enctype="multipart/form-data">
+        <label for="imageInput" class="form-label">Put your image there!</label>
+        <input class="form-control form-control-lg" id="imageInput" name="imageInput" type="file" accept="image/png">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+<div id="image" name="image"></div>
+<script>
+    $(document).on('submit', '#file-form', function (event) {
+        event.preventDefault();
+        const formData = new FormData();
+        formData.append('image', $('#imageInput')[0].files[0])
+        $.ajax({
+            type: 'POST',
+            url: '/',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                $('#image').append('<img src="' + result.data[0].url + '" />');
+            }
+        });
+    });
+</script>
+{% endblock %}
