@@ -1,0 +1,36 @@
+name: build and deploy
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.5.0
+    
+      - name: Docker Login
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: https://index.docker.io/v1/
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_password }}
+          logout: false
+      
+      - name: Build and push docker image
+        uses: docker/build-push-action@v3.2.0
+        with:
+          push: true
+          tags: index.docker.io/marwynthedev/openai-demo:${{ github.sha }}
+          file: ./Dockerfile
+
+      - name: Azure WebApp
+        uses: Azure/webapps-deploy@v2.2.5
+        with:
+          app-name: openai-demo
+          publish-profile: <publishData><publishProfile profileName="openai-demo - Web Deploy" publishMethod="MSDeploy" publishUrl="openai-demo.scm.azurewebsites.net:443" msdeploySite="openai-demo" userName="$openai-demo" userPWD="oT5y88tpbhjg9mZZ4FMvWgsmJ2dHESMHJ4ytlNilwRRPhPmkG7zisqzTQ2qP" destinationAppUrl="https://fhtw-22-12.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="fhtw-22-12 - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-am2-345.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="fhtw-22-12\$fhtw-22-12" userPWD="oT5y88tpbhjg9mZZ4FMvWgsmJ2dHESMHJ4ytlNilwRRPhPmkG7zisqzTQ2qP" destinationAppUrl="https://fhtw-22-12.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="fhtw-22-12 - Zip Deploy" publishMethod="ZipDeploy" publishUrl="fhtw-22-12.scm.azurewebsites.net:443" userName="$fhtw-22-12" userPWD="oT5y88tpbhjg9mZZ4FMvWgsmJ2dHESMHJ4ytlNilwRRPhPmkG7zisqzTQ2qP" destinationAppUrl="https://openai-demo.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>
+          images: index.docker,io/marwynthedev/openai-demo:${{ github.sha }}
+        
